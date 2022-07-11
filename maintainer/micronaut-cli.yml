@@ -1,0 +1,6 @@
+applicationType: default
+defaultPackage: me.jics
+testFramework: spock
+sourceLanguage: java
+buildTool: maven
+features: [annotation-api, app-name, data, data-r2dbc, email-javamail, email-template, flyway, hibernate-validator, http-client, jackson-databind, java, java-application, logback, lombok, maven, netty-server, openapi, postgres, r2dbc, reactor, reactor-http-client, readme, security-annotations, security-jwt, security-oauth2, shade, spock, testcontainers, yaml]

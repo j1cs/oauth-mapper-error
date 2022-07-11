@@ -1,0 +1,89 @@
+services:
+  maintainer:
+    build:
+      context: ./maintainer
+    ports:
+      - '8081:8081'
+    container_name: maintainer
+    environment:
+      - R2DBC_URL=r2dbc:postgresql://postgres:5432/postgres
+      - R2DBC_DIALECT=POSTGRES
+      - R2DBC_USER=keycloak
+      - R2DBC_PASSWORD=password
+      - OAUTH_AUTHORIZATION_URL=http://keycloak:8080/realms/jics/protocol/openid-connect/auth
+      - OAUTH_TOKEN_URL=http://keycloak:8080/realms/jics/protocol/openid-connect/token
+      - OAUTH_JWKS=http://keycloak:8080/realms/jics/protocol/openid-connect/certs
+    depends_on:
+      - postgres
+    networks:
+      - keycloak      
+  postgres:
+    image: "postgres:${POSTGRES_VERSION}"
+    healthcheck:
+      test: ["CMD", "nc", "-zv", "localhost", "5432"]
+      interval: 1s
+      timeout: 10s
+    ports:
+      - 5432:5432      
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: password
+      PGPASSWORD: password
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 525M
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - keycloak
+
+  adminer:
+    image: adminer
+    container_name: adminer
+    ports:
+      - "8000:8080"
+    networks:
+      - keycloak      
+
+  keycloak:
+    image: "quay.io/keycloak/keycloak:${KC_VERSION}"
+    command: ["start-dev", "--import-realm"]
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+    environment:
+      - KC_DB=postgres
+      - KC_DB_USERNAME=keycloak
+      - KC_DB_PASSWORD=password
+      - KC_DB_URL=jdbc:postgresql://postgres:5432/keycloak
+      - KC_METRICS_ENABLED=true
+      - KC_HEALTH_ENABLED=true
+      #- KC_HTTP_RELATIVE_PATH=/auth
+      - KC_LOG_LEVEL=${KC_LOG_LEVEL}
+      - KC_LOG_CONSOLE_OUTPUT=json
+      - KC_FEATURES=${KC_FEATURES}
+      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+      - KC_REALM_NAME=${KC_REALM_NAME}
+    ports:
+      - ${KC_PORT}:8080
+    volumes:
+      - ./keycloak/realms/jics.json:/opt/keycloak/data/import/jics.json:ro
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1100M
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - keycloak
+networks:
+  keycloak:
