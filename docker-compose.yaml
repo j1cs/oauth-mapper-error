@@ -71,7 +71,6 @@ services:
       - KC_FEATURES=${KC_FEATURES}
       - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
       - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
-      - KC_REALM_NAME=${KC_REALM_NAME}
     ports:
       - ${KC_PORT}:8080
     volumes:
