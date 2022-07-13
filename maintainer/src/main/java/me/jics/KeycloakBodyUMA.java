@@ -14,5 +14,5 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Documented
 @Retention(RUNTIME)
 @Target({TYPE, PARAMETER})
-public @interface KeycloakBasicAuth {
+public @interface KeycloakBodyUMA {
 }
